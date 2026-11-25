@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import os
-import httpx
 from dataclasses import dataclass
 
+import httpx
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -13,7 +13,6 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
-# 1. Загружаем переменные из файла .env
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -25,12 +24,11 @@ if not BOT_TOKEN or not OPENAI_API_KEY:
 
 logging.basicConfig(level=logging.INFO)
 
-# 2. Настраиваем прокси (сессию) для обхода блокировок
-# Убедись, что порт 10808 совпадает с тем, что в твоем VPN-клиенте (v2rayN)
-proxy_url = "socks5://127.0.0.1:10801" 
-session = AiohttpSession(proxy=proxy_url)
+# --- НАСТРОЙКА ПРОКСИ (порт 10801 из вашего клиента) ---
+proxy_url = "socks5://127.0.0.1:10801"
 
-# 3. Создаем бота и передаем ему сессию с прокси
+# Прокси для Telegram
+session = AiohttpSession(proxy=proxy_url)
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -38,16 +36,14 @@ bot = Bot(
 )
 dp = Dispatcher()
 
-# Подключаем бесплатный OpenRouter
-# Подключаем бесплатный OpenRouter и передаем ему прокси
+# Прокси для нейросети (OpenRouter)
 http_client = httpx.AsyncClient(proxy=proxy_url)
 ai_client = AsyncOpenAI(
     api_key=OPENAI_API_KEY,
     base_url=BASE_URL,
-    http_client=http_client  # <-- Передаем прокси нейросети
+    http_client=http_client
 )
 
-# Бесплатная модель
 MODEL = "meta-llama/llama-3-8b-instruct:free"
 
 @dataclass(frozen=True)
