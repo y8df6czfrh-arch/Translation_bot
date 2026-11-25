@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import httpx
 from dataclasses import dataclass
 
 from aiogram import Bot, Dispatcher, F
@@ -8,31 +9,45 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
+# 1. Загружаем переменные из файла .env
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+BASE_URL = os.getenv("BASE_URL")
 
 if not BOT_TOKEN or not OPENAI_API_KEY:
     raise RuntimeError("Не заданы BOT_TOKEN или OPENAI_API_KEY в .env")
 
 logging.basicConfig(level=logging.INFO)
 
+# 2. Настраиваем прокси (сессию) для обхода блокировок
+# Убедись, что порт 10808 совпадает с тем, что в твоем VPN-клиенте (v2rayN)
+proxy_url = "socks5://127.0.0.1:10801" 
+session = AiohttpSession(proxy=proxy_url)
+
+# 3. Создаем бота и передаем ему сессию с прокси
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    session=session
 )
 dp = Dispatcher()
 
-# Стало (добавь base_url):
+# Подключаем бесплатный OpenRouter
+# Подключаем бесплатный OpenRouter и передаем ему прокси
+http_client = httpx.AsyncClient(proxy=proxy_url)
 ai_client = AsyncOpenAI(
     api_key=OPENAI_API_KEY,
-    base_url=os.getenv("BASE_URL")
+    base_url=BASE_URL,
+    http_client=http_client  # <-- Передаем прокси нейросети
 )
 
+# Бесплатная модель
 MODEL = "meta-llama/llama-3-8b-instruct:free"
 
 @dataclass(frozen=True)
