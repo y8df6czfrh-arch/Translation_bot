@@ -33,7 +33,7 @@ ai_client = AsyncOpenAI(
     base_url=os.getenv("BASE_URL")
 )
 
-MODEL = "gpt-4o-mini"
+MODEL = "meta-llama/llama-3-8b-instruct:free"
 
 @dataclass(frozen=True)
 class Style:
