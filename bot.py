@@ -26,7 +26,12 @@ bot = Bot(
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
 )
 dp = Dispatcher()
-ai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+# Стало (добавь base_url):
+ai_client = AsyncOpenAI(
+    api_key=OPENAI_API_KEY,
+    base_url=os.getenv("BASE_URL")
+)
 
 MODEL = "gpt-4o-mini"
 
